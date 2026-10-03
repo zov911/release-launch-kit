@@ -2,7 +2,7 @@
 import { parseArgs } from 'node:util';
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { classify } from '../src/core/classify.js';
 import { checkLimits } from '../src/core/limits.js';
 import { templateKit } from '../src/core/templates.js';
@@ -43,11 +43,20 @@ const { values: o } = parseArgs({
   },
 });
 
+/** Without a config, name the product after package.json "name" or the folder ("my-app" → "My App"). */
+async function guessProductName() {
+  let name;
+  try { name = JSON.parse(await readFile('package.json', 'utf8')).name; } catch {}
+  name = (name || basename(process.cwd())).replace(/^@[^/]+\//, '');
+  return name ? name.split(/[-_\s]+/).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join(' ') : undefined;
+}
+
 async function main() {
   if (o.help || !o.from) { console.log(HELP); return o.help ? 0 : 1; }
 
   const cfgPath = o.config ?? (existsSync('launchkit.config.json') ? 'launchkit.config.json' : null);
   const cfg = cfgPath ? JSON.parse(await readFile(cfgPath, 'utf8')) : {};
+  if (!cfg.product) cfg.product = await guessProductName();
   const rel = classify(await loadRelease(o.from, { version: o.version }));
   if (!rel.external.length) throw new Error(`No customer-facing changes found (${rel.internal.length} internal). Nothing to announce.`);
 

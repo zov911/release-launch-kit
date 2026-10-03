@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1] - 2026-10-03
+
+### Fixed
+- Without a config file, the product name now defaults to package.json "name" or the folder name instead of "Our product"
+
 ## [1.0.0] - 2026-10-02
 
 ### Added
