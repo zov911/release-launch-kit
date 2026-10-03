@@ -1,6 +1,6 @@
 {
   "name": "release-launch-kit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Turn release notes into a launch kit: blog post, email, LinkedIn, X thread, in-app message, customer notes and sales brief.",
   "type": "module",
   "license": "UNLICENSED",
