@@ -1,0 +1,11 @@
+{
+  "product": "Northwind",
+  "url": "https://northwind.example.com",
+  "changelog_url": "https://northwind.example.com/changelog",
+  "audience": "B2B marketing and RevOps teams",
+  "tone": "clear, confident, practical, no hype",
+  "cta": { "text": "Try AI lead scoring", "url": "https://northwind.example.com/app?utm_source=launch&utm_medium=email" },
+  "hashtags": ["#RevOps", "#B2BMarketing", "#ProductUpdate"],
+  "avoid": ["revolutionary", "game-changer", "seamless", "unlock"],
+  "sender": "Alex, Product at Northwind"
+}
