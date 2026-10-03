@@ -1,0 +1,10 @@
+{
+  "product": "Release Launch Kit",
+  "url": "https://zov911.github.io/release-launch-kit/",
+  "changelog_url": "https://github.com/zov911/release-launch-kit/blob/main/CHANGELOG.md",
+  "audience": "product and marketing teams",
+  "tone": "clear, practical, a little playful, no hype",
+  "cta": { "text": "Try it in your browser", "url": "https://zov911.github.io/release-launch-kit/" },
+  "hashtags": ["#ProductMarketing", "#DevTools", "#ProductUpdate"],
+  "sender": "zov911"
+}
