@@ -5,6 +5,8 @@ import { parseRelease, parseKeepAChangelog, cleanText, guessType } from '../src/
 import { classify, channelPlan } from '../src/core/classify.js';
 import { templateKit, short } from '../src/core/templates.js';
 import { checkLimits, LIMITS } from '../src/core/limits.js';
+import { KitSchema, _prompts } from '../src/ai.js';
+import { renderFiles } from '../src/write.js';
 
 const changelog = readFileSync(new URL('../examples/CHANGELOG.md', import.meta.url), 'utf8');
 const cfg = JSON.parse(readFileSync(new URL('../examples/launchkit.config.json', import.meta.url), 'utf8'));
@@ -42,9 +44,10 @@ test('classify: size, headline, channel plan', () => {
   assert.deepEqual(channelPlan('patch'), ['in_app', 'customer_notes']);
 });
 
-test('template kit: within limits, no internal changes leaked', () => {
+test('template kit: valid against the AI schema, within limits, no internal changes leaked', () => {
   const rel = classify(parseRelease(changelog));
   const kit = templateKit(rel, cfg);
+  assert.ok(KitSchema.safeParse(kit).success);
   assert.deepEqual(checkLimits(kit), []);
   const all = JSON.stringify(kit);
   assert.ok(!/eslint|playwright/i.test(all), 'internal chores must not leak');
@@ -54,3 +57,13 @@ test('template kit: within limits, no internal changes leaked', () => {
   assert.equal(short('AI lead scoring that ranks every new HubSpot contact by fit and intent'), 'AI lead scoring');
 });
 
+test('output files and AI prompts', () => {
+  const rel = classify(parseRelease(changelog));
+  const files = renderFiles(rel, templateKit(rel, cfg), { mode: 'template', warnings: [] });
+  assert.deepEqual(Object.keys(files).sort(), ['README.md', 'blog.md', 'customer-notes.md', 'email.md', 'in-app.json', 'linkedin.md', 'sales-brief.md', 'x-thread.md']);
+  assert.match(files['README.md'], /Launch checklist/);
+  const sys = _prompts.systemPrompt(cfg), user = _prompts.userPrompt(rel);
+  assert.match(sys, /Northwind/);
+  assert.match(sys, /unlock/);
+  assert.ok(!/eslint/.test(user), 'internal items are not sent to the model');
+});
