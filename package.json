@@ -1,0 +1,22 @@
+{
+  "name": "release-launch-kit",
+  "version": "1.0.0",
+  "description": "Turn release notes into a launch kit: blog post, email, LinkedIn, X thread, in-app message, customer notes and sales brief.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "author": "zov911 (https://zov911.com)",
+  "bin": {
+    "launch-kit": "bin/launch-kit.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "example": "node bin/launch-kit.js --from examples/CHANGELOG.md --config examples/launchkit.config.json --mode template --out examples/output"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
+    "zod": "^4.6.5"
+  }
+}
