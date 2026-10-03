@@ -1,0 +1,70 @@
+name: Release Launch Kit
+description: Turn release notes into a launch kit (blog post, email, LinkedIn, X thread, in-app message, customer notes, sales brief).
+author: zov911
+branding:
+  icon: send
+  color: purple
+
+inputs:
+  from:
+    description: 'Source: CHANGELOG.md, git:v1.2.0..HEAD, or github:owner/repo@tag'
+    default: CHANGELOG.md
+  version:
+    description: Version to pick from a changelog (default newest released)
+    required: false
+  config:
+    description: Path to launchkit.config.json (brand voice)
+    required: false
+  mode:
+    description: ai | template (default ai when anthropic-api-key is set)
+    required: false
+  model:
+    description: Claude model for ai mode
+    required: false
+  out:
+    description: Output folder
+    default: launch
+  anthropic-api-key:
+    description: Anthropic API key for ai mode (store as a secret)
+    required: false
+
+outputs:
+  dir:
+    description: Folder containing the generated kit
+    value: ${{ steps.run.outputs.dir }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install launch-kit
+      shell: bash
+      run: cd "$GITHUB_ACTION_PATH" && npm ci --omit=dev --no-audit --no-fund
+
+    - name: Generate launch kit
+      id: run
+      shell: bash
+      # Inputs go through env vars (not ${{ }} in the script) to avoid shell injection.
+      env:
+        LK_FROM: ${{ inputs.from }}
+        LK_VERSION: ${{ inputs.version }}
+        LK_CONFIG: ${{ inputs.config }}
+        LK_MODE: ${{ inputs.mode }}
+        LK_MODEL: ${{ inputs.model }}
+        LK_OUT: ${{ inputs.out }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        args=(--from "$LK_FROM" --out "$LK_OUT")
+        [ -n "$LK_VERSION" ] && args+=(--version "$LK_VERSION")
+        [ -n "$LK_CONFIG" ] && args+=(--config "$LK_CONFIG")
+        [ -n "$LK_MODE" ] && args+=(--mode "$LK_MODE")
+        [ -n "$LK_MODEL" ] && args+=(--model "$LK_MODEL")
+        node "$GITHUB_ACTION_PATH/bin/launch-kit.js" "${args[@]}"
+        dir=$(ls -td "$LK_OUT"/*/ | head -1)
+        dir=${dir%/}
+        echo "dir=$dir" >> "$GITHUB_OUTPUT"
+        cat "$dir/README.md" >> "$GITHUB_STEP_SUMMARY"
